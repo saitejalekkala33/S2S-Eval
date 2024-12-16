@@ -2,6 +2,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import styles from "./admin.module.css";
 import axios from 'axios';
+// import { db, collection, addDoc, getDocs } from './firebase';
 
 require('dotenv').config();
 
@@ -29,98 +30,73 @@ export default function AdminPage() {
     setNewLanguage(e.target.value);
   };
 
-  const handleAddLanguageSubmit = (
-    e: React.KeyboardEvent<HTMLInputElement>
-  ) => {
-    if (e.key === "Enter" && newLanguage.trim() !== "") {
-      if (languages.includes(newLanguage.trim())) {
+  const handleAddLanguageSubmit = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    const trimmedLanguage = newLanguage.trim();
+    if (e.key === "Enter" && trimmedLanguage) {
+      if (languages.includes(trimmedLanguage)) {
         setError("This language is already added.");
         setNewLanguage("");
         return;
       }
-      setLanguages([...languages, newLanguage]);
-      setSelectedLanguage(newLanguage);
+      setLanguages([...languages, trimmedLanguage]);
+      setSelectedLanguage(trimmedLanguage);
       setNewLanguage("");
       setIsAdding(false);
       setError(null);
     }
   };
+  
 
   const handleClickOutside = (event: MouseEvent) => {
     if (inputRef.current && !inputRef.current.contains(event.target as Node)) {
       setIsAdding(false);
     }
   };
-  //@ts-ignore
-  const handleOriginalVideo = async (event, index) => {
-    const file = event.target.files[0]; 
-    if (!file) return;
-    const formData = new FormData();
-    formData.append("file", file);
-    formData.append("upload_preset", process.env.NEXT_PUBLIC_CLOUDINARY_PRESET_NAME!); 
-    formData.append("cloud_name", process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME!); 
-    try {
-      const url = `https://api.cloudinary.com/v1_1/${process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME}/video/upload`;
-      console.log(url);
-      const response = await axios.post(url, formData);
-      console.log("Uploaded Successfully:", response.data);
-      const uploadedVideoUrl = response.data.secure_url;
-      console.log("Uploaded Video URL:", uploadedVideoUrl);
-      const updatedTableData = [...tableData];
-      updatedTableData[index].originalVideo = uploadedVideoUrl;
-      setTableData(updatedTableData);
-    } catch (error) {
-      console.error("Error uploading video:", error);
-      alert("Video upload failed. Please try again.");
-    }
-  };
-  // const handleOriginalVideo = (e: React.ChangeEvent<HTMLInputElement>, index: number) => {
-  //   if (e.target.files && e.target.files[0]) {
-  //     const file = e.target.files[0];
-  //     const fileURL = URL.createObjectURL(file);
-  //     const updatedTableData = [...tableData];
-  //     updatedTableData[index].originalVideo = fileURL;
-  //     setTableData(updatedTableData);
-  //   }
-  // };
 
-  //@ts-ignore
-  const handleGeneratedVideo = async (event, index) => {
-    const file = event.target.files[0]; 
+  const handleVideoUpload = async (event: React.ChangeEvent<HTMLInputElement>, index: number, type: "originalVideo" | "generatedVideo") => {
+    const file = event.target.files?.[0];
     if (!file) return;
     const formData = new FormData();
     formData.append("file", file);
-    formData.append("upload_preset", process.env.NEXT_PUBLIC_CLOUDINARY_PRESET_NAME!); 
-    formData.append("cloud_name", process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME!); 
+    formData.append("upload_preset", process.env.NEXT_PUBLIC_CLOUDINARY_PRESET_NAME!);
+    formData.append("cloud_name", process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME!);
     try {
       const url = `https://api.cloudinary.com/v1_1/${process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME}/video/upload`;
-      console.log(url);
       const response = await axios.post(url, formData);
-      console.log("Uploaded Successfully:", response.data);
       const uploadedVideoUrl = response.data.secure_url;
-      console.log("Uploaded Video URL:", uploadedVideoUrl);
+  
       const updatedTableData = [...tableData];
-      updatedTableData[index].generatedVideo = uploadedVideoUrl;
+      updatedTableData[index][type] = uploadedVideoUrl;
       setTableData(updatedTableData);
     } catch (error) {
-      console.error("Error uploading video:", error);
       alert("Video upload failed. Please try again.");
     }
   };
 
-  // const handleGeneratedVideo = (
-  //   e: React.ChangeEvent<HTMLInputElement>,
-  //   index: number
-  // ) => {
-  //   if (e.target.files && e.target.files[0]) {
-  //     const file = e.target.files[0];
-  //     const fileURL = URL.createObjectURL(file);
-
-  //     const updatedTableData = [...tableData];
-  //     updatedTableData[index].generatedVideo = fileURL; // Store video URL
-  //     setTableData(updatedTableData);
-  //   }
-  // };
+  const handleDbSubmit = async(index: number) => {
+    try{
+      const { originalVideo, generatedVideo } = tableData[index];
+      const language = selectedLanguage;
+      if (!originalVideo || !generatedVideo) {
+        alert("Both videos must be uploaded before submitting.");
+        return;
+      }
+      const body = {
+        language,
+        original_video_url: originalVideo,
+        generated_video_url: generatedVideo,
+      };
+      console.log(body); 
+      const dburl = 'http://localhost:5000/api/video';
+      const response = await axios.post(dburl, body);
+      console.log(response);
+      if (response.status === 201) {
+        alert("Video data submitted successfully.");
+      }
+    } catch(error){
+      alert("Failed to submit video data. Please try again.");
+    }
+  };
 
   useEffect(() => {
     document.addEventListener("mousedown", handleClickOutside);
@@ -133,15 +109,6 @@ export default function AdminPage() {
     setSelectedLanguage(language);
   };
 
-  // const handleAddRow = () => {
-  //   const newRow: TableRow = {
-  //     id: tableData.length + 1,
-  //     originalVideo: `Video ${tableData.length + 1}`,
-  //     generatedVideo: `Generated ${tableData.length + 1}`,
-  //     overallReview: `Review ${tableData.length + 1}`,
-  //   };
-  //   setTableData([...tableData, newRow]);
-  // };
   const handleAddRow = () => {
     const newRow: TableRow = {
       id: tableData.length + 1,
@@ -192,20 +159,25 @@ export default function AdminPage() {
                 <tbody>
                   {tableData.map((row, index) => (
                     <tr key={row.id}>
-                      <td>{index+1}</td>
                       <td>
-                        <p>
-                          <label htmlFor={`originalVideo-${row.id}`}>Upload Original Video</label>
-                          <input type="file" id={`originalVideo-${row.id}`} onChange={(e) => handleOriginalVideo(e, index)}/>
-                        </p>
+                        {row.originalVideo ? (<p>Original Video Uploaded</p>) : (
+                          <p>
+                            <label  htmlFor={`originalVideo-${row.id}`}>Upload Original Video</label>
+                            <input type="file" id={`originalVideo-${row.id}`} accept="video/*" onChange={(e) => handleVideoUpload(e, index, "originalVideo")}/>
+                          </p>
+                        )}
                       </td>
                       <td>
-                        <p>
-                          <label htmlFor={`generatedVideo-${row.id}`}>Upload Generated Video</label>
-                          <input type="file" id={`generatedVideo-${row.id}`} onChange={(e) => handleGeneratedVideo(e, index)}/>
-                        </p>
+                        {row.generatedVideo ? (<p>Original Video Uploaded</p>) : (
+                          <p>
+                            <label htmlFor={`generatedVideo-${row.id}`}>Upload Generated Video</label>
+                            <input type="file" id={`generatedVideo-${row.id}`} accept="video/*" onChange={(e) => handleVideoUpload(e, index, "generatedVideo")}/>
+                          </p>
+                        )}
                       </td>
-                      <td>{row.overallReview}</td>
+                      <td>
+                        {row.originalVideo && row.generatedVideo ? (<button className={styles.uploadButton} onClick={() => handleDbSubmit(index)}>✅</button>) : (<p>Missing Videos</p>)}
+                      </td>
                     </tr>
                   ))}
                 </tbody>
