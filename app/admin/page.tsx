@@ -2,7 +2,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import styles from "./admin.module.css";
 import axios from 'axios';
-// import { db, collection, addDoc, getDocs } from './firebase';
 
 require('dotenv').config();
 
@@ -14,7 +13,7 @@ interface TableRow {
 }
 
 export default function AdminPage() {
-  const [languages, setLanguages] = useState<string[]>([]);
+  const [languages, setLanguages] = useState<{ language: string }[]>([]);
   const [newLanguage, setNewLanguage] = useState("");
   const [isAdding, setIsAdding] = useState(false);
   const [selectedLanguage, setSelectedLanguage] = useState<string | null>(null);
@@ -22,30 +21,71 @@ export default function AdminPage() {
   const [error, setError] = useState<string | null>(null);
   const inputRef = useRef<HTMLInputElement | null>(null);
 
+  useEffect
+  const fetchLanguages = async () => {
+    try {
+      const response = await axios.get("http://localhost:5000/api/language");
+      setLanguages(response.data.languages); 
+    } catch (error) {
+      console.error("Error fetching languages:", error);
+    }
+  };
+
+  const handleLoadLanguages = () => {
+    fetchLanguages(); 
+  };
+
   const handleAddLanguageClick = () => {
     setIsAdding(true);
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setNewLanguage(e.target.value);
-  };
+  };  
 
-  const handleAddLanguageSubmit = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    const trimmedLanguage = newLanguage.trim();
+  const handleAddLanguageSubmit = async (e: React.KeyboardEvent<HTMLInputElement>) => {
+    const trimmedLanguage = newLanguage; 
+    setError(null);
+    
     if (e.key === "Enter" && trimmedLanguage) {
-      if (languages.includes(trimmedLanguage)) {
-        setError("This language is already added.");
+      try {
+        const response = await axios.post("http://localhost:5000/api/language", { language: trimmedLanguage });
+        const addedLanguage = response.data.language;
+        setLanguages([...languages, addedLanguage]);
+        setSelectedLanguage(addedLanguage);
         setNewLanguage("");
-        return;
+        setIsAdding(false);
+        setError(null);
+      } catch (error: any) {
+        if (error.response && error.response.data) {
+          setError(error.response.data.message);
+        } else {
+          setError("Failed to add language. Please try again.");
+        }
+        console.error("Error adding language:", error);
       }
-      setLanguages([...languages, trimmedLanguage]);
-      setSelectedLanguage(trimmedLanguage);
-      setNewLanguage("");
-      setIsAdding(false);
-      setError(null);
     }
   };
   
+
+  useEffect(() => {
+    const displayLanguages = async () => {
+      try {
+        const response = await axios.get("http://localhost:5000/api/language");
+        if (response.data && Array.isArray(response.data)) {
+          setLanguages(response.data); 
+          setError(null); 
+        } else {
+          setError("Failed to fetch languages. Invalid response format.");
+        }
+      } catch (error: any) {
+        console.error("Error fetching languages:", error);
+        setError("Failed to fetch languages. Please try again.");
+      }
+    };
+
+    displayLanguages(); 
+  }, []); 
 
   const handleClickOutside = (event: MouseEvent) => {
     if (inputRef.current && !inputRef.current.contains(event.target as Node)) {
@@ -124,15 +164,17 @@ export default function AdminPage() {
       <div className={styles.leftContainer}>
         <h1 className={styles.header1}>Language</h1>
         <div className={styles.scrollableArea}>
-          {languages.map((language, index) => (
-            <button key={index} className={styles.scrollButton} onClick={() => handleLanguageClick(language)}>{language}</button>
+          {languages.map((languageObj, index) => (
+            <button key={index} className={styles.scrollButton} onClick={() => handleLanguageClick(languageObj.language)}>
+              {languageObj.language}
+            </button>
           ))}
         </div>
 
-        <button className={styles.newlanguage} onClick={handleAddLanguageClick}>Add Language</button>
+        <button className={styles.newlanguage} onClick={handleAddLanguageClick}>Add</button>
         {isAdding && (
           <div>
-            <input ref={inputRef} type="text" className={styles.inputField} value={newLanguage} onChange={handleInputChange} onKeyDown={handleAddLanguageSubmit} placeholder="Enter language name"/>
+            <input ref={inputRef} type="text" className={styles.inputField} value={newLanguage} onChange={handleInputChange} onKeyDown={handleAddLanguageSubmit} placeholder="New Language"/>
             {error && <div className={styles.errorPopup}>{error}</div>}
           </div>
         )}
