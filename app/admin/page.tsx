@@ -17,6 +17,7 @@ type TableData = {
   language: string;
   original_video_url: string;
   generated_video_url: string;
+  isUploaded: boolean;
 }[];
 
 export default function AdminPage() {
@@ -168,6 +169,7 @@ export default function AdminPage() {
       const response = await axios.post(dburl, body);
       if (response.status === 201) {
         alert("Video data submitted successfully.");
+        setTableData1(prev => prev.map((row, i) => i == index ? {...row, isUploaded: true} : row));
       } else {
         alert("Failed to submit video data.");
       }
@@ -204,6 +206,7 @@ export default function AdminPage() {
           language: item.language,
           original_video_url: item.original_video_url,
           generated_video_url: item.generated_video_url,
+          isUploaded: true,
         }));
         console.log(formattedData);
         setTableData1(formattedData);
@@ -225,6 +228,7 @@ export default function AdminPage() {
       language: selectedLanguage as string,
       original_video_url: "",
       generated_video_url: "",
+      isUploaded: false,
     };
     console.log(newRow);
     setTableData1([...tableData1, newRow]);
@@ -278,9 +282,9 @@ export default function AdminPage() {
                   {tableData1.map((row, index) => (
                     <tr key={row.index}>
                       <td>{row.index}</td>
-                      <td>{row.original_video_url ? (<div style={{ display: "flex", alignItems: "center", gap: "8px" }}><p>View Original Video</p><a href="#" onClick={(e) => {e.preventDefault(); handleOriginalVideoClick(row.original_video_url);}}>{selectedOriginalVideo === row.original_video_url ? "⬇️" : "⬆️"}</a></div>) : (<p><label htmlFor={`generatedVideo-${row.index}`}>Upload Generated Video</label> <input type="file" id={`generatedVideo-${row.index}`} accept="video/*" onChange={(e) => handleVideoUpload(e, index, "generatedVideo")}></input></p>)}</td>
+                      <td>{row.original_video_url ? (<div style={{ display: "flex", alignItems: "center", gap: "8px" }}><p>View Original Video</p><a href="#" onClick={(e) => {e.preventDefault(); handleOriginalVideoClick(row.original_video_url);}}>{selectedOriginalVideo === row.original_video_url ? "⬇️" : "⬆️"}</a></div>) : (<p><label htmlFor={`original-${row.index}`}>Upload original Video</label> <input type="file" id={`original-${row.index}`} accept="video/*" onChange={(e) => handleVideoUpload(e, index, "originalVideo")}></input></p>)}</td>
                       <td>{row.generated_video_url ? (<div style={{ display: "flex", alignItems: "center", gap: "8px" }}><p>View Generated Video</p><a href="#" onClick={(e) => {e.preventDefault(); handleGeneratedVideoClick(row.generated_video_url);}}>{selectedGeneratedVideo === row.generated_video_url ? "⬇️" : "⬆️"}</a></div>) : (<p><label htmlFor={`generatedVideo-${row.index}`}>Upload Generated Video</label> <input type="file" id={`generatedVideo-${row.index}`} accept="video/*" onChange={(e) => handleVideoUpload(e, index, "generatedVideo")}></input></p>)}</td>
-                      <td>{row.original_video_url && row.generated_video_url ? (<button className={styles.uploadButton} onClick={() => handleDbSubmit(index)}>✅</button>) : (<p>Missing Videos</p>)}</td>
+                      <td>{row.original_video_url && row.generated_video_url && !row.isUploaded ? (<button className={styles.uploadButton} onClick={() => handleDbSubmit(index)}>✅</button>) : (row.isUploaded && <p>Uploaded</p>)}</td>
                     </tr>
                   ))}
                 </tbody>
