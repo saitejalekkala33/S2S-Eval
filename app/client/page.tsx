@@ -16,17 +16,14 @@ export default function ClientPage() {
   const [languages, setLanguages] = useState<{ _id: string; language: string }[]>([]);
   const [tableData, setTableData] = useState<TableData>([]);
   const [error, setError] = useState<string | null>(null);
+  const [videoUrls, setVideoUrls] = useState({ original: "", generated: "" });
+  const [selectedRow, setSelectedRow] = useState<number | null>(null);
   const [originalVideo, setOriginalVideo] = useState<string | null>(null);
   const [generatedVideo, setGeneratedVideo] = useState<string | null>(null);
 
   const handleLanguageChange = async (event: React.ChangeEvent<HTMLSelectElement>) => {
     const languageId = event.target.value;
-    const selectedLangObj = languages.find((lang) => lang._id === languageId);
-    if (!selectedLangObj) {
-      setError("Invalid language selection.");
-      return;
-    }
-    setSelectedLanguage(selectedLangObj.language);
+    setSelectedLanguage(languageId);
 
     try {
       const response = await axios.get("http://localhost:5000/api/video", {
@@ -53,6 +50,16 @@ export default function ClientPage() {
     }
   };
 
+  const handleVideoToggle = (index: number, original: string, generated: string) => {
+    if (selectedRow === index) {
+      setVideoUrls({ original: "", generated: "" });
+      setSelectedRow(null);
+    } else {
+      setVideoUrls({ original, generated });
+      setSelectedRow(index);
+    }
+  };
+
   const handleVideoVisual = (originalUrl: string, generatedUrl: string) => {
     setOriginalVideo(originalUrl);
     setGeneratedVideo(generatedUrl);
@@ -73,7 +80,6 @@ export default function ClientPage() {
         setError("Failed to fetch languages. Please try again.");
       }
     };
-
     displayLanguages();
   }, []);
 
@@ -81,27 +87,20 @@ export default function ClientPage() {
     <div className={styles.container}>
       <div className={styles.leftContainer}>
         <h1 className={styles.header1}>Choose a Language</h1>
-        <select
-          className={styles.languageDropdown}
-          onChange={handleLanguageChange}
-          value={selectedLanguage}
-        >
+        <select className={styles.languageDropdown} onChange={handleLanguageChange} value={selectedLanguage}>
           <option value="">Select a language</option>
-          {languages.map((languageObj) => (
-            <option key={languageObj._id} value={languageObj._id}>
-              {languageObj.language}
-            </option>
-          ))}
+          {languages.map((languageObj) => (<option key={languageObj._id} value={languageObj._id}>{languageObj.language}</option>))}
         </select>
-        {selectedLanguage && (
+        {/* {selectedLanguage && ( */}
+        {tableData.length > 0 && (
           <div className={styles.tableContainer}>
             <table className={styles.scrollableTable}>
               <tbody>
                 {tableData.map((item, index) => (
                   <tr key={index} className={styles.tableRow}>
-                    <td className={styles.nameCell} onClick={() => handleVideoVisual(item.original_video_url, item.generated_video_url)}>{`${item.language} ${item.index}`}</td>
-                    {/* <td className={styles.buttonCell}><button className={styles.smallButton} onClick={() => handleVideoVisual(item.original_video_url, item.generated_video_url)}>➡️</button></td> */}
+                    <td className={styles.nameCell} onClick={() => handleVideoVisual(item.original_video_url, item.generated_video_url)}>{`${languages.find((lang) => lang._id === selectedLanguage)?.language || "Unknown Language"} ${item.index}`}</td>
                     <td className={styles.checkboxCell}><input type="checkbox" /></td>
+                    <td className={styles.buttonCell}><button className={styles.smallButton} onClick={() => handleVideoToggle(index, item.original_video_url, item.generated_video_url)}>{selectedRow === index ? "⬅️" : "➡️"}</button></td>
                   </tr>
                 ))}
               </tbody>
@@ -111,18 +110,10 @@ export default function ClientPage() {
       </div>
 
       <div className={styles.rightContainer}>
-        {selectedLanguage && <div className={styles.selectedLanguage}>{selectedLanguage}</div>}
+        {selectedLanguage && <div className={styles.selectedLanguage}>{languages.find((lang) => lang._id === selectedLanguage)?.language || "Unknown Language"}</div>}
         <div className={styles.videoContainer}>
-          <div className={styles.originalVideo}>
-            {originalVideo && (
-              <video src={originalVideo} controls className={styles.videoPlayer}></video>
-            )}
-          </div>
-          <div className={styles.generatedVideo}>
-            {generatedVideo && (
-              <video src={generatedVideo} controls className={styles.videoPlayer}></video>
-            )}
-          </div>
+          <div className={styles.originalVideo}>{videoUrls.original && <video src={videoUrls.original} controls/>}</div>
+          <div className={styles.generatedVideo}>{videoUrls.generated && <video src={videoUrls.generated} controls />}</div>
         </div>
       </div>
     </div>
