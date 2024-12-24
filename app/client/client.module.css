@@ -149,3 +149,35 @@
   }
   
   
+.ratingContainer {
+  padding: 20px;
+  display: flex;
+  flex-direction: row;
+  gap: 20px;
+  justify-content: start;
+}
+
+.ratingItem {
+  display: flex;
+  flex-direction: column;
+  align-items: center; 
+}
+
+.inputField {
+  width: 50%;
+  color: black;
+  padding: 12px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  font-size: 16px;
+  outline: none;
+  transition: border-color 0.3s;
+}
+
+.inputField:focus {
+  border-color: #007bff;
+}
+
+.inputField::placeholder {
+  color: #888;
+}
