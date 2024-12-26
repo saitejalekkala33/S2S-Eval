@@ -1,0 +1,105 @@
+  .container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    background-color: #f4f7fc;
+    flex-direction: column;
+    position: relative;
+  }
+  
+  .card {
+    background-color: #fff;
+    padding: 40px;
+    border-radius: 8px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    width: 300px;
+    text-align: center;
+  }
+  
+  .card h2 {
+    margin-bottom: 20px;
+    font-size: 24px;
+    color: #333;
+  }
+  
+  .inputGroup {
+    margin-bottom: 15px;
+    width: 100%;
+    position: relative;
+  }
+  
+  .inputGroup input {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 14px;
+    outline: none;
+    box-sizing: border-box;
+    color: #000;
+  }
+  
+  .inputGroup input::placeholder {
+    color: #aaa;
+    font-size: 14px;
+  }
+  
+  .inputGroup input:focus {
+    border-color: #4a90e2;
+  }
+  
+  .button {
+    width: 100%;
+    padding: 10px;
+    background-color: #4a90e2;
+    color: #fff;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 16px;
+  }
+  
+  .button:hover {
+    background-color: #357ABD;
+  }
+  
+
+.successMessage {
+  color: green;
+  font-size: 16px;
+  margin-top: 10px;
+  text-align: center;
+}
+
+.errorMessage {
+  color: red;
+  font-size: 16px;
+  margin-top: 10px;
+  text-align: center;
+}
+
+.roleText {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  font-size: 16px;
+  font-weight: bold;
+  color: #333;
+}
+
+.signinText {
+  margin-top: 20px;
+  font-size: 14px;
+  color: #666;
+}
+
+.signinText a {
+  color: #4a90e2;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.signinText a:hover {
+  text-decoration: underline;
+}
