@@ -128,16 +128,34 @@ export default function ClientPage() {
     };
     displayLanguages();
   }, []);
-
+  
   const handleReviewSubmit = async () => {
     if (selectedVidId === null){
       setError("Please select a video to submit a review.");
       return;
     }
+
+    const currentRatings = ratings[selectedIndex!];
+    if (!currentRatings || typeof currentRatings.lipSync !== 'number' || typeof currentRatings.translation !== 'number' || typeof currentRatings.audio !== 'number' || typeof currentRatings.overall !== 'number'){
+      setError("Please provide all ratings before submitting.");
+      return;
+    }
+
+    if (!inputValue || inputValue.trim().length === 0) {
+      setError("Please provide a comment before submitting.");
+      return;
+    }
+
     const userId = getCookie('userId');
     const reviewData = {
       username: userId,
       videoId: selectedVidId,
+      ratings: {
+        lipSync: currentRatings.lipSync,
+        translation: currentRatings.translation,
+        audio: currentRatings.audio,
+        overall: currentRatings.overall,
+      },
       comment: inputValue,
     };
     console.log(reviewData);
@@ -145,7 +163,7 @@ export default function ClientPage() {
       const response = await axios.post('http://localhost:5000/api/review', reviewData);
       if (response.data && response.data.status === 'success') {
         setInputValue('');
-        // setRatings({});
+        setRatings({});
         setSelectedVidId(null);
         setSelectedRow(null);
         setSelectedIndex(null);
@@ -159,17 +177,6 @@ export default function ClientPage() {
       setError('An error occurred while submitting your review. Please try again later.');
     }
   };
-  // const reviewData = {
-  //   vid_id: selectedVidId,
-  //   ratings: {
-  //     lipSync: ratings[selectedIndex]?.lipSync || 0,
-  //     translation: ratings[selectedIndex]?.translation || 0,
-  //     audio: ratings[selectedIndex]?.audio || 0,
-  //     overall: ratings[selectedIndex]?.overall || 0,
-  //   },
-  //   comment: inputValue,
-  //   username: username, // send the username as part of the review
-  // };
 
   return (
     <div className={styles.container}>
