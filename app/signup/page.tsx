@@ -6,9 +6,9 @@ import styles from "./signup.module.css";
 import { useRouter, useSearchParams } from "next/navigation";
 
 export default function SignUp() {
-  const [username, setUsername] = useState("asibn");
-  const [email, setEmail] = useState("aosfna@gm.com");
-  const [password, setPassword] = useState("oausf");
+  const [username, setUsername] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
   const router = useRouter();

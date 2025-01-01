@@ -1,12 +1,15 @@
 "use client";
 
 import { useState } from 'react';
+import axios from 'axios';
 import styles from './signin.module.css';
 import { useRouter, useSearchParams } from 'next/navigation';
 
 export default function SignIn() {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
+  const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
   const router = useRouter();
 
   const searchParams = useSearchParams();
@@ -16,10 +19,41 @@ export default function SignIn() {
     router.push(`/signup?role=${role}`); 
   };
 
-  const handleSubmit = (event: React.FormEvent) => {
+  const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
+    setError('');
+    setSuccess('');
     console.log('Username:', username);
     console.log('Password:', password);
+    if (!username || !password) {
+      setError('Username and password are required.');
+      return;
+    }
+    const userData = {
+      username,
+      password,
+      role,
+    };
+
+    try {
+      const res = await axios.post("http://localhost:5000/api/user/signin", userData);
+      setSuccess(res.data.message);
+      if (res.data.status !== "success") {
+        setError(res.data.message || "An error occurred.");
+        return;
+      }
+      if (role === "Admin") {
+        router.push("/admin");
+      } else if (role === "Client") {
+        router.push("/client");
+      }
+    } catch (error: any) {
+      if (error.response){
+        setError(error.response.data.message || "An error occurred during sign-in.");
+      } else {
+        setError("Network error, please try again later.");
+      }
+    };
   };
 
   return (
