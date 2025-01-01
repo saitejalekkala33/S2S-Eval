@@ -11,9 +11,11 @@
   "dependencies": {
     "@clerk/nextjs": "^6.9.1",
     "axios": "^1.7.9",
+    "cookie": "^1.0.2",
     "dotenv": "^16.4.7",
     "firebase": "^11.1.0",
     "firebase-admin": "^13.0.1",
+    "js-cookie": "^3.0.5",
     "next": "15.1.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
