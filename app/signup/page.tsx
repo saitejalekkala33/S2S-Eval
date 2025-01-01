@@ -35,16 +35,15 @@ export default function SignUp() {
     try {
       const res = await axios.post("http://localhost:5000/api/user", userData);
       setSuccess(res.data.message);
-      // alert(res.data.message);
       if (res.data.status !== "success") {
         alert('Some Error');
         return;
       }
       if (role == "Admin") {
-        router.push("/admin");
+        router.push(`/admin?username=${username}`);
       }
       if (role == "Client") {
-        router.push("/client");
+        router.push(`/client?username=${username}`);
       }
 
     } catch (error: any) {
@@ -69,51 +68,20 @@ export default function SignUp() {
         <h2>Sign Up</h2>
         <form onSubmit={handleSubmit}>
           <div className={styles.inputGroup}>
-            <input
-              type="text"
-              id="username"
-              placeholder="Username"
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
-              required
-            />
+            <input type="text" id="username" placeholder="Username" value={username} onChange={(e) => setUsername(e.target.value)} required/>
           </div>
           <div className={styles.inputGroup}>
-            <input
-              type="email"
-              id="email"
-              placeholder="Email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-            />
+            <input type="email" id="email" placeholder="Email" value={email} onChange={(e) => setEmail(e.target.value)} required/>
           </div>
           <div className={styles.inputGroup}>
-            <input
-              type="password"
-              id="password"
-              placeholder="Password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-            />
+            <input type="password" id="password" placeholder="Password" value={password} onChange={(e) => setPassword(e.target.value)} required/>
           </div>
-          <button type="submit" className={styles.button}>
-            Sign Up
-          </button>
+          <button type="submit" className={styles.button}>Sign Up</button>
         </form>
         {success && <p className={styles.successMessage}>{success}</p>}
         {error && <p className={styles.errorMessage}>{error}</p>}
       </div>
-      <div className={styles.signinText}>
-        If already an user?{" "}
-        <a
-          onClick={() => handleSignInClick(`${role}`)}
-          style={{ cursor: "pointer", color: "blue" }}
-        >
-          signin
-        </a>
-      </div>
+      <div className={styles.signinText}>If already an user?{" "}<a onClick={() => handleSignInClick(`${role}`)} style={{ cursor: "pointer", color: "blue" }}>signin</a></div>
     </div>
   );
 }

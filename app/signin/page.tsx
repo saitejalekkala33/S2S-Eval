@@ -42,10 +42,11 @@ export default function SignIn() {
         setError(res.data.message || "An error occurred.");
         return;
       }
+      document.cookie = `userId=${res.data.user.id};`;
       if (role === "Admin") {
-        router.push("/admin");
+        router.push(`/admin?username=${username}`);
       } else if (role === "Client") {
-        router.push("/client");
+        router.push(`/client?username=${username}`);
       }
     } catch (error: any) {
       if (error.response){
