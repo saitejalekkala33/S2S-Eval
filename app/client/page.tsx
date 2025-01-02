@@ -35,6 +35,7 @@ export default function ClientPage() {
   const [selectedVidId, setSelectedVidId] = useState<string | null>(null);
   const [ratings, setRatings] = useState<{ [key: number]: { lipSync: number; translation: number; audio: number; overall: number } }>({});
   const [inputValue, setInputValue] = useState<string>('');
+  const [submittedReviews, setSubmittedReviews] = useState<Set<string>>(new Set());
   const searchParams = useSearchParams();
   const username = searchParams?.get('username');
 
@@ -66,6 +67,21 @@ export default function ClientPage() {
       console.error("Error fetching videos:", error);
       setError("Failed to fetch videos. Please try again.");
       setTableData([]);
+    }
+  };
+
+  const fetchReviewSubmit = async () => {
+    try {
+      const response = await axios.get(`http://localhost:5000/api/review?username=${username}`);
+      if (response.data && Array.isArray(response.data)) {
+        const reviewedVideoIds = response.data.map((review: { videoId: string }) => review.videoId);
+        setSubmittedReviews(new Set(reviewedVideoIds));
+      } else {
+        setError("Failed to fetch submitted reviews. Invalid response format.");
+      }
+    } catch (error: any) {
+      console.error("Error fetching submitted reviews:", error);
+      setError("Failed to fetch submitted reviews. Please try again.");
     }
   };
 
@@ -162,6 +178,7 @@ export default function ClientPage() {
     try {
       const response = await axios.post('http://localhost:5000/api/review', reviewData);
       if (response.data && response.data.status === 'success') {
+        setSubmittedReviews(prev => new Set(prev).add(selectedVidId));
         setInputValue('');
         setRatings({});
         setSelectedVidId(null);
@@ -193,7 +210,7 @@ export default function ClientPage() {
                 {tableData.map((item, index) => (
                   <tr key={index} className={styles.tableRow}>
                     <td className={styles.nameCell}>{`${languages.find((lang) => lang._id === selectedLanguage)?.language || "Unknown Language"} ${item.index}`}</td>
-                    <td className={styles.checkboxCell}><input type="checkbox" /></td>
+                    <td className={styles.checkboxCell}><input type="checkbox" checked={submittedReviews.has(item.vid_id)} readOnly /></td>
                     <td className={styles.buttonCell}><button className={styles.smallButton} onClick={() => handleVideoToggle(index, item.original_video_url, item.generated_video_url, item.vid_id)}>{selectedRow === index ? "⬅️" : "➡️"}</button></td>
                   </tr>
                 ))}
@@ -232,7 +249,7 @@ export default function ClientPage() {
               </div>
             </div>
             <div className={styles.CommentSection}><input type="text" className={styles.inputField} placeholder="Enter Comments here" value={inputValue} onChange={handleInputChange}/></div>
-            <button className={styles.ReviewSubmit} onClick={handleReviewSubmit}>Submit✅</button>
+            <div className={styles.submitButton}><button className={styles.ReviewSubmit} onClick={handleReviewSubmit}>{submittedReviews.has(selectedVidId!) ? "Resubmit ✅" : "Submit ✅"}</button></div>
           </>
         )}
       </div>

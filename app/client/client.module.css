@@ -86,10 +86,11 @@
   }
 
   .videoContainer {
+    width: 100%;
     display: flex;
     justify-content: space-between;
     align-items: center; 
-    padding: 1rem;
+    padding: 2rem;
     gap: 1rem; 
     margin-top: 50px;
   }
@@ -163,7 +164,7 @@
   display: flex;
   flex-direction: row;
   gap: 20px;
-  justify-content: start;
+  justify-content: center;
 }
 
 .ratingItem {
@@ -172,8 +173,18 @@
   align-items: center; 
 }
 
+.CommentSection {
+  display: flex;
+  flex-direction: column;
+  align-items: center; 
+  justify-content: center;
+  width: 100%; 
+  margin-top: 20px;
+  text-align: center; 
+}
+
 .inputField {
-  width: 50%;
+  width: 70%;
   color: black;
   padding: 12px;
   border: 1px solid #ccc;
@@ -181,6 +192,7 @@
   font-size: 16px;
   outline: none;
   transition: border-color 0.3s;
+  margin-bottom: 10px;
 }
 
 .inputField:focus {
@@ -190,6 +202,15 @@
 .inputField::placeholder {
   color: #888;
 }
+
+.submitButton {
+  display: flex;
+  justify-content: center;
+  align-items: center; 
+  width: 100%; 
+  margin-top: 20px; 
+}
+
 
 .ReviewSubmit {
   padding: 1rem;

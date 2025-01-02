@@ -330,6 +330,7 @@ export default function AdminPage() {
                     <th>Index</th>
                     <th>Original Video URL</th>
                     <th>Generated Video URL</th>
+                    <th>Summarized Reveiws</th>
                   </tr>
                 </thead>
                 <tbody>
